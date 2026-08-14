@@ -1,0 +1,6 @@
+{
+  "name": "Interactive Lesson Plan Document Generator",
+  "description": "Interactive corporate lesson plan template editor for trainees with clean layout, dynamic stages, real-time preview, and one-click PDF export.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
