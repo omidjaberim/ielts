@@ -1,7 +1,6 @@
 import React from 'react'
 import {
      FileDown,
-     Printer,
      Sparkles,
      RotateCcw,
      FileText,
@@ -18,7 +17,6 @@ interface HeaderProps {
      viewMode: ViewMode
      setViewMode: (mode: ViewMode) => void
      onExportPdf: () => void
-     onPrint: () => void
      onOpenBrandingModal: () => void
      onLoadSample: () => void
      onReset: () => void
@@ -32,7 +30,6 @@ export const Header: React.FC<HeaderProps> = ({
      viewMode,
      setViewMode,
      onExportPdf,
-     onPrint,
      onOpenBrandingModal,
      onLoadSample,
      onReset,
@@ -174,16 +171,6 @@ export const Header: React.FC<HeaderProps> = ({
                                    <span>Load Sample</span>
                               </button>
 
-
-                              {/* Print Button */}
-                              <button
-                                   onClick={onPrint}
-                                   title='Print Document'
-                                   className='hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-300 hover:text-white bg-slate-900 border border-slate-800 hover:bg-slate-800 transition-colors cursor-pointer'
-                              >
-                                   <Printer className='w-3.5 h-3.5' />
-                                   <span>Print</span>
-                              </button>
 
                               {/* Primary One-Click Export PDF Button */}
                               <button

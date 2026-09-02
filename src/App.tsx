@@ -25,7 +25,7 @@ import { SectionPage2 } from './components/Editor/SectionPage2'
 import { SectionPage3Stages } from './components/Editor/SectionPage3Stages'
 import { SectionPage5Feedback } from './components/Editor/SectionPage5Feedback'
 import { DocumentPageLayout } from './components/Preview/DocumentPageLayout'
-import { exportLessonPlanToPdf, printLessonPlan } from './utils/pdfExport'
+import { exportLessonPlanToPdf } from './utils/pdfExport'
 
 const STORAGE_KEY = 'interactive_lesson_plan_draft_v1'
 
@@ -136,30 +136,16 @@ export default function App() {
                const message =
                     err instanceof Error
                          ? err.message
-                         : 'PDF export failed in this browser. The print dialog will open instead.'
+                         : 'PDF export failed in this browser. Please try again or use another browser.'
                console.error('Export PDF error:', err)
                showToast(
-                    'PDF export failed in this browser. Opening print dialog instead...',
+                    'PDF export failed in this browser. Please try again or use another browser.',
                     'error',
                )
-               try {
-                    printLessonPlan()
-               } catch (printErr) {
-                    console.error('Print fallback failed:', printErr)
-                    showToast(
-                         'PDF export and print fallback are unavailable in this browser. Please try again in a moment.',
-                         'error',
-                    )
-               }
                console.warn(message)
           } finally {
                setIsExporting(false)
           }
-     }
-
-     const handlePrint = () => {
-          if (!checkStageValidation()) return
-          printLessonPlan()
      }
 
      const handleLoadSample = () => {
@@ -247,7 +233,6 @@ export default function App() {
                     viewMode={viewMode}
                     setViewMode={setViewMode}
                     onExportPdf={handleExportPdf}
-                    onPrint={handlePrint}
                     onOpenBrandingModal={() => setIsBrandingModalOpen(true)}
                     onLoadSample={handleLoadSample}
                     onReset={handleReset}

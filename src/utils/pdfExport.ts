@@ -312,7 +312,7 @@ export async function exportLessonPlanToPdf(filename = 'Teaching_Practice_Lesson
     } catch (error) {
       console.error(`PDF export failed while rendering page ${i + 1}:`, error);
       throw new Error(
-        `PDF export failed while rendering page ${i + 1}. This usually happens because the browser cannot parse newer CSS color syntax in the document. Please use the browser print option instead.`
+        `PDF export failed while rendering page ${i + 1}. This browser could not capture the page colors and layout correctly. Please try the page again in a moment or use a different browser.`
       );
     }
   }
