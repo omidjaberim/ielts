@@ -4,10 +4,7 @@ import {
      Printer,
      Sparkles,
      RotateCcw,
-     Building2,
      FileText,
-     Download,
-     Upload,
      ChevronDown,
      Edit3,
      Eye,
@@ -44,15 +41,14 @@ export const Header: React.FC<HeaderProps> = ({
      isExporting,
      lessonData,
 }) => {
-     const fileInputRef = React.useRef<HTMLInputElement>(null)
      const [isViewMenuOpen, setIsViewMenuOpen] = React.useState(false)
      const viewOptions: Array<{
           value: ViewMode
           label: string
           icon: React.ComponentType<{ className?: string }>
      }> = [
-          { value: 'editor', label: 'Interactive', icon: Edit3 },
           { value: 'preview', label: 'Document', icon: Eye },
+          { value: 'editor', label: 'Interactive', icon: Edit3 },
           { value: 'split', label: 'Split', icon: Columns },
      ]
      const selectedView = viewOptions.find(
@@ -159,18 +155,6 @@ export const Header: React.FC<HeaderProps> = ({
 
                          {/* Right Action Tools */}
                          <div className='flex items-center gap-2'>
-                              {/* Branding Config Button */}
-                              <button
-                                   onClick={onOpenBrandingModal}
-                                   title='Customize Institute Name & Logo'
-                                   className='flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-200 hover:text-white bg-slate-900 border border-slate-800 hover:bg-slate-800 transition-colors cursor-pointer'
-                              >
-                                   <Building2 className='w-3.5 h-3.5 text-amber-400' />
-                                   <span className='hidden sm:inline'>
-                                        Branding
-                                   </span>
-                              </button>
-
                               {/* Presets & Reset Dropdown / Buttons */}
                               <button
                                    onClick={onReset}
@@ -190,29 +174,6 @@ export const Header: React.FC<HeaderProps> = ({
                                    <span>Load Sample</span>
                               </button>
 
-                              {/* Import / Export JSON */}
-                              <input
-                                   type='file'
-                                   ref={fileInputRef}
-                                   onChange={onImportJson}
-                                   accept='.json'
-                                   className='hidden'
-                              />
-                              <button
-                                   onClick={() => fileInputRef.current?.click()}
-                                   title='Import JSON Draft'
-                                   className='p-2 rounded-lg text-slate-300 hover:text-white bg-slate-900 border border-slate-800 hover:bg-slate-800 transition-colors cursor-pointer'
-                              >
-                                   <Upload className='w-3.5 h-3.5' />
-                              </button>
-
-                              <button
-                                   onClick={onExportJson}
-                                   title='Export Draft Data (JSON)'
-                                   className='p-2 rounded-lg text-slate-300 hover:text-white bg-slate-900 border border-slate-800 hover:bg-slate-800 transition-colors cursor-pointer'
-                              >
-                                   <Download className='w-3.5 h-3.5' />
-                              </button>
 
                               {/* Print Button */}
                               <button

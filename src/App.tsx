@@ -44,7 +44,7 @@ export default function App() {
      })
 
      const [viewMode, setViewMode] = useState<'editor' | 'preview' | 'split'>(
-          'editor',
+          'preview',
      )
      const [activeTab, setActiveTab] = useState<
           'section1' | 'section2' | 'section3' | 'section5'
