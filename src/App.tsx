@@ -133,11 +133,12 @@ export default function App() {
                await exportLessonPlanToPdf(filename)
                showToast('PDF exported successfully!')
           } catch (err) {
+               const message =
+                    err instanceof Error
+                         ? err.message
+                         : 'Failed to export PDF. Please try browser print instead.'
                console.error('Export PDF error:', err)
-               showToast(
-                    'Failed to export PDF. Please try browser print instead.',
-                    'error',
-               )
+               showToast(message, 'error')
           } finally {
                setIsExporting(false)
           }

@@ -1,5 +1,5 @@
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
+// Keep these libraries out of the main bundle so the app stays lighter on initial load.
+// They are loaded only when the user actually triggers PDF export.
 
 function oklabToRgbValues(L: number, aLab: number, bLab: number, A: number): string {
   const l_ = L + 0.3963377774 * aLab + 0.2158037573 * bLab;
@@ -57,6 +57,14 @@ function replaceUnsupportedColorsInCss(cssText: string): string {
 
   let sanitized = cssText;
 
+  const replaceFunction = (match: string, fallback: string) => {
+    try {
+      return match;
+    } catch {
+      return fallback;
+    }
+  };
+
   // 1. Replace color-mix(...)
   sanitized = sanitized.replace(/color-mix\((?:[^()]+|\((?:[^()]+|\([^()]*\))*\))*\)/gi, () => {
     return 'rgba(0, 0, 0, 0.05)';
@@ -113,11 +121,23 @@ function replaceUnsupportedColorsInCss(cssText: string): string {
     }
   });
 
-  // 5. Replace any standalone oklab or oklch identifiers so html2canvas color parser never triggers on them
+  // 5. Replace any remaining modern CSS color tokens used by Tailwind v4 in production.
   sanitized = sanitized.replace(/\boklab\b/gi, 'srgb');
   sanitized = sanitized.replace(/\boklch\b/gi, 'srgb');
+  sanitized = sanitized.replace(/\bcolor-mix\b/gi, 'rgb');
+  sanitized = sanitized.replace(/\blight-dark\b/gi, 'rgb');
 
   return sanitized;
+}
+
+function sanitizeNodeTree(root: ParentNode): void {
+  const nodes = Array.from(root.querySelectorAll('*'));
+  nodes.forEach((node) => {
+    if (!(node instanceof HTMLElement)) return;
+    if (node.style && node.getAttribute('style')) {
+      node.setAttribute('style', replaceUnsupportedColorsInCss(node.getAttribute('style') || ''));
+    }
+  });
 }
 
 /**
@@ -210,6 +230,11 @@ function inlineComputedStyles(sourceEl: Element, targetEl: Element): void {
 }
 
 export async function exportLessonPlanToPdf(filename = 'Teaching_Practice_Lesson_Plan.pdf'): Promise<void> {
+  const html2canvasModule = await import('html2canvas');
+  const html2canvas = (html2canvasModule as any).default ?? html2canvasModule;
+  const jsPDFModule = await import('jspdf');
+  const jsPDF = (jsPDFModule as any).default ?? (jsPDFModule as any).jsPDF ?? jsPDFModule;
+
   // First look for pages in dedicated offscreen export container
   let pageElements = Array.from(
     document.querySelectorAll<HTMLElement>('#pdf-export-container [data-pdf-page]')
@@ -237,54 +262,59 @@ export async function exportLessonPlanToPdf(filename = 'Teaching_Practice_Lesson
   for (let i = 0; i < pageElements.length; i++) {
     const pageEl = pageElements[i];
 
-    // High resolution capture
-    const canvas = await html2canvas(pageEl, {
-      scale: 2,
-      useCORS: true,
-      logging: false,
-      backgroundColor: '#ffffff',
-      windowWidth: 1200,
-      onclone: (clonedDoc) => {
-        // Sanitize CSS rules and style elements in the cloned DOM
-        sanitizeClonedDocumentForHtml2Canvas(clonedDoc);
+    try {
+      const canvas = await html2canvas(pageEl, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+        windowWidth: 1200,
+        onclone: (clonedDoc) => {
+          sanitizeClonedDocumentForHtml2Canvas(clonedDoc);
+          sanitizeNodeTree(clonedDoc);
 
-        // Replace any remaining select elements in cloned document with full-text display nodes
-        const selectElements = Array.from(clonedDoc.querySelectorAll('select'));
-        selectElements.forEach((sel) => {
-          const selectedText = sel.options[sel.selectedIndex]?.text || sel.value || '';
-          if (selectedText && selectedText.trim()) {
-            const textNode = clonedDoc.createElement('div');
-            textNode.className = 'w-full text-xs font-black p-1.5 rounded-xs border border-emerald-800 bg-emerald-900 text-amber-300 font-sans leading-snug whitespace-normal break-words shadow-2xs';
-            textNode.textContent = selectedText;
-            sel.parentNode?.replaceChild(textNode, sel);
+          const selectElements = Array.from(clonedDoc.querySelectorAll('select'));
+          selectElements.forEach((sel) => {
+            const selectEl = sel as unknown as HTMLSelectElement;
+            const selectedText = selectEl.options[selectEl.selectedIndex]?.text || selectEl.value || '';
+            if (selectedText && selectedText.trim()) {
+              const textNode = clonedDoc.createElement('div');
+              textNode.className = 'w-full text-xs font-black p-1.5 rounded-xs border border-emerald-800 bg-emerald-900 text-amber-300 font-sans leading-snug whitespace-normal break-words shadow-2xs';
+              textNode.textContent = selectedText;
+              selectEl.parentNode?.replaceChild(textNode, selectEl);
+            }
+          });
+
+          const container = clonedDoc.getElementById('pdf-export-container');
+          if (container) {
+            container.style.position = 'static';
+            container.style.left = '0';
+            container.style.top = '0';
+            container.style.zIndex = '99999';
+            container.style.opacity = '1';
+            container.style.display = 'block';
+            container.style.visibility = 'visible';
+
+            const clonedPage = container.querySelector(`[data-pdf-page="${i + 1}"]`) || container;
+            inlineComputedStyles(pageEl, clonedPage);
           }
-        });
+        },
+      });
 
-        const container = clonedDoc.getElementById('pdf-export-container');
-        if (container) {
-          container.style.position = 'static';
-          container.style.left = '0';
-          container.style.top = '0';
-          container.style.zIndex = '99999';
-          container.style.opacity = '1';
-          container.style.display = 'block';
-          container.style.visibility = 'visible';
+      const imgData = canvas.toDataURL('image/jpeg', 0.98);
+      const imgHeight = (canvas.height * pdfWidth) / canvas.width;
 
-          // Match cloned page with source page and inline resolved computed styles
-          const clonedPage = container.querySelector(`[data-pdf-page="${i + 1}"]`) || container;
-          inlineComputedStyles(pageEl, clonedPage);
-        }
-      },
-    });
+      if (i > 0) {
+        pdf.addPage();
+      }
 
-    const imgData = canvas.toDataURL('image/jpeg', 0.98);
-    const imgHeight = (canvas.height * pdfWidth) / canvas.width;
-
-    if (i > 0) {
-      pdf.addPage();
+      pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, Math.min(imgHeight, pdfHeight));
+    } catch (error) {
+      console.error(`PDF export failed while rendering page ${i + 1}:`, error);
+      throw new Error(
+        `PDF export failed while rendering page ${i + 1}. This usually happens because the browser cannot parse newer CSS color syntax in the document. Please use the browser print option instead.`
+      );
     }
-
-    pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, Math.min(imgHeight, pdfHeight));
   }
 
   pdf.save(filename);
