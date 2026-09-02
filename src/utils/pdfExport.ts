@@ -143,6 +143,28 @@ function sanitizeNodeTree(root: ParentNode): void {
 /**
  * Sanitizes the cloned document so that html2canvas does not fail on unsupported CSS color functions.
  */
+function sanitizeCssRuleList(ruleList: CSSRuleList | undefined): void {
+  if (!ruleList) return;
+
+  Array.from(ruleList).forEach((rule) => {
+    if ('style' in rule && rule.style) {
+      const styleRule = rule as CSSStyleRule;
+      for (let i = 0; i < styleRule.style.length; i++) {
+        const prop = styleRule.style[i];
+        const val = styleRule.style.getPropertyValue(prop);
+        if (val && /(oklch|oklab|color-mix|light-dark)/i.test(val)) {
+          styleRule.style.setProperty(prop, replaceUnsupportedColorsInCss(val));
+        }
+      }
+    }
+
+    if ('cssRules' in rule) {
+      const nestedRules = (rule as CSSGroupingRule).cssRules;
+      sanitizeCssRuleList(nestedRules);
+    }
+  });
+}
+
 function sanitizeClonedDocumentForHtml2Canvas(clonedDoc: Document): void {
   // 1. Sanitize all <style> elements
   const styleElements = Array.from(clonedDoc.querySelectorAll('style'));
@@ -161,24 +183,12 @@ function sanitizeClonedDocumentForHtml2Canvas(clonedDoc: Document): void {
     }
   });
 
-  // 3. Check for any rules in styleSheets
+  // 3. Recursively sanitize nested CSS rules in every stylesheet / layer / media block
   try {
     const sheets = Array.from(clonedDoc.styleSheets);
     sheets.forEach((sheet) => {
       try {
-        const rules = Array.from(sheet.cssRules || []);
-        rules.forEach((rule) => {
-          if (rule.cssText && ('style' in rule) && (rule as CSSStyleRule).style) {
-            const styleRule = rule as CSSStyleRule;
-            for (let i = 0; i < styleRule.style.length; i++) {
-              const prop = styleRule.style[i];
-              const val = styleRule.style.getPropertyValue(prop);
-              if (val && (val.includes('oklch') || val.includes('oklab') || val.includes('color-mix') || val.includes('light-dark'))) {
-                styleRule.style.setProperty(prop, replaceUnsupportedColorsInCss(val));
-              }
-            }
-          }
-        });
+        sanitizeCssRuleList(sheet.cssRules);
       } catch {
         // Cross-origin stylesheet access safely caught
       }

@@ -29,13 +29,90 @@ import { exportLessonPlanToPdf } from './utils/pdfExport'
 
 const STORAGE_KEY = 'interactive_lesson_plan_draft_v1'
 
+function normalizeLessonPlanData(data: Partial<LessonPlanData> | null | undefined): LessonPlanData {
+     const safe = data && typeof data === 'object' ? data : {}
+     const normalizedStages = Array.isArray(safe.stages)
+         ? safe.stages.map((stage, index) => ({
+               id: stage?.id || `stage-${index + 1}`,
+               stageName: typeof stage?.stageName === 'string' ? stage.stageName : '',
+               stageAndAim: typeof stage?.stageAndAim === 'string' ? stage.stageAndAim : '',
+               procedureAndInstructions:
+                    typeof stage?.procedureAndInstructions === 'string'
+                         ? stage.procedureAndInstructions
+                         : '',
+               timeMins:
+                    typeof stage?.timeMins === 'number' || typeof stage?.timeMins === 'string'
+                         ? stage.timeMins
+                         : '',
+               interactionMode:
+                    typeof stage?.interactionMode === 'string' ? stage.interactionMode : '',
+          }))
+         : emptyLessonPlan.stages
+
+     return {
+         branding: {
+              instituteName: safe.branding?.instituteName || emptyLessonPlan.branding.instituteName,
+              department: safe.branding?.department || emptyLessonPlan.branding.department,
+              address: safe.branding?.address || emptyLessonPlan.branding.address,
+              phone: safe.branding?.phone || emptyLessonPlan.branding.phone,
+              website: safe.branding?.website || emptyLessonPlan.branding.website,
+         },
+         metadata: {
+              traineeName: safe.metadata?.traineeName || '',
+              level: safe.metadata?.level || '',
+              tutor: safe.metadata?.tutor || '',
+              date: safe.metadata?.date || new Date().toISOString().split('T')[0],
+              studentCount: safe.metadata?.studentCount || '',
+              lengthMins: safe.metadata?.lengthMins || '',
+              tpNumber: safe.metadata?.tpNumber || '',
+              lessonPlanNumber: safe.metadata?.lessonPlanNumber || '',
+         },
+         aims: {
+              mainAims: safe.aims?.mainAims || '',
+              subsidiaryAims: safe.aims?.subsidiaryAims || '',
+              materials: safe.aims?.materials || '',
+              assumptions: safe.aims?.assumptions || '',
+              anticipatedProblems: safe.aims?.anticipatedProblems || '',
+              possibleSolutions: safe.aims?.possibleSolutions || '',
+              personalAims: safe.aims?.personalAims || '',
+         },
+         languageAnalysis: {
+              focusMode: safe.languageAnalysis?.focusMode || 'A',
+              tenseItem: safe.languageAnalysis?.tenseItem || '',
+              form: safe.languageAnalysis?.form || '',
+              meaningUse: safe.languageAnalysis?.meaningUse || '',
+              phonology: safe.languageAnalysis?.phonology || '',
+              vocabulary: safe.languageAnalysis?.vocabulary || '',
+         },
+         skillsFocus: {
+              reading: Boolean(safe.skillsFocus?.reading),
+              listening: Boolean(safe.skillsFocus?.listening),
+              writing: Boolean(safe.skillsFocus?.writing),
+              speaking: Boolean(safe.skillsFocus?.speaking),
+              specificSkills: safe.skillsFocus?.specificSkills || '',
+              preTeachVocab: safe.skillsFocus?.preTeachVocab || '',
+         },
+         overallAim: safe.overallAim || '',
+         stages: normalizedStages,
+         feedback: {
+              reminders: safe.feedback?.reminders || '',
+              aimsComments: safe.feedback?.aimsComments || '',
+              stagesComments: safe.feedback?.stagesComments || '',
+              languageAnalysisComments: safe.feedback?.languageAnalysisComments || '',
+              trainerName: safe.feedback?.trainerName || '',
+              grade: safe.feedback?.grade || '',
+              dateEvaluated: safe.feedback?.dateEvaluated || '',
+         },
+     }
+}
+
 export default function App() {
      // Load saved draft or default empty lesson plan
      const [lessonData, setLessonData] = useState<LessonPlanData>(() => {
           try {
                const saved = localStorage.getItem(STORAGE_KEY)
                if (saved) {
-                    return JSON.parse(saved)
+                    return normalizeLessonPlanData(JSON.parse(saved))
                }
           } catch (e) {
                console.error('Failed to parse saved lesson plan draft', e)
