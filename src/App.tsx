@@ -113,8 +113,20 @@ export default function App() {
                const stageListText = invalidIndices
                     .map((i) => `Stage #${i + 1}`)
                     .join(', ')
+               const hasAnyFilledStage = lessonData.stages.some((stage) =>
+                    Boolean(stage.stageName?.trim()) ||
+                        Boolean(stage.stageAndAim?.trim()) ||
+                        Boolean(stage.procedureAndInstructions?.trim()) ||
+                        Boolean(stage.interactionMode?.trim()) ||
+                        (stage.timeMins !== undefined &&
+                             stage.timeMins !== null &&
+                             String(stage.timeMins).trim() !== ''),
+               )
+               const stageHint = hasAnyFilledStage
+                    ? 'Please select a stage for any filled stage rows before saving or downloading.'
+                    : 'Please select a stage for any filled stage rows before saving or downloading.'
                toast.error(
-                    `⚠️ CANNOT SAVE OR DOWNLOAD\n\nEvery stage in your procedure MUST have a Stage selected from the dropdown menu (Warm-up, Lead-in, Presentation, Practice, Production, Pre-Reading, Pre-Listening, During-Reading, During-Listening, Post-Reading, Post-Listening, Closure, or Plan B).\n\nThe following stage row(s) do not have a Stage selected:\n👉 ${stageListText}\n\nPlease select a stage from the dropdown for all rows before saving or downloading.`,
+                    `⚠️ CANNOT SAVE OR DOWNLOAD\n\nEvery stage in your procedure MUST have a Stage selected from the dropdown menu (Warm-up, Lead-in, Presentation, Practice, Production, Pre-Reading, Pre-Listening, During-Reading, During-Listening, Post-Reading, Post-Listening, Closure, or Plan B).\n\nThe following stage row(s) do not have a Stage selected:\n👉 ${stageListText}\n\n${stageHint}`,
                )
                setViewMode('editor')
                setActiveTab('section3')

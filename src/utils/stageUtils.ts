@@ -47,7 +47,19 @@ export function validateLessonPlanStages(stages: LessonStage[]): {
   invalidIndices: number[];
 } {
   const invalidIndices: number[] = [];
+
   stages.forEach((stage, idx) => {
+    const hasAnyStageContent =
+      Boolean(stage.stageName?.trim()) ||
+      Boolean(stage.stageAndAim?.trim()) ||
+      Boolean(stage.procedureAndInstructions?.trim()) ||
+      Boolean(stage.interactionMode?.trim()) ||
+      (stage.timeMins !== undefined && stage.timeMins !== null && String(stage.timeMins).trim() !== '');
+
+    if (!hasAnyStageContent) {
+      return;
+    }
+
     const sName = getStageName(stage);
     if (!sName || !STAGE_OPTIONS.includes(sName as StageOption)) {
       invalidIndices.push(idx);
