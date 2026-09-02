@@ -126,7 +126,7 @@ export default function App() {
      const handleExportPdf = async () => {
           if (!checkStageValidation()) return
           setIsExporting(true)
-          showToast('Generating high-resolution PDF document...', 'info')
+          showToast('Generating PDF document...', 'info')
           try {
                const trainee = lessonData.metadata.traineeName || 'Trainee'
                const filename = `Teaching_Practice_Lesson_Plan_${trainee.replace(/\s+/g, '_')}.pdf`
@@ -136,9 +136,22 @@ export default function App() {
                const message =
                     err instanceof Error
                          ? err.message
-                         : 'Failed to export PDF. Please try browser print instead.'
+                         : 'PDF export failed in this browser. The print dialog will open instead.'
                console.error('Export PDF error:', err)
-               showToast(message, 'error')
+               showToast(
+                    'PDF export failed in this browser. Opening print dialog instead...',
+                    'error',
+               )
+               try {
+                    printLessonPlan()
+               } catch (printErr) {
+                    console.error('Print fallback failed:', printErr)
+                    showToast(
+                         'PDF export and print fallback are unavailable in this browser. Please try again in a moment.',
+                         'error',
+                    )
+               }
+               console.warn(message)
           } finally {
                setIsExporting(false)
           }
