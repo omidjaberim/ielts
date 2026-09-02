@@ -1,4 +1,4 @@
-import React from 'react'
+﻿import React from 'react'
 import {
      FileDown,
      Sparkles,
@@ -72,7 +72,7 @@ export const Header: React.FC<HeaderProps> = ({
                                         </span>
                                    </div>
                                    <p className='text-xs text-blue-200/80 truncate'>
-                                        {lessonData.branding.instituteName} •{' '}
+                                        {lessonData.branding.instituteName} â€¢{' '}
                                         {lessonData.metadata.traineeName ||
                                              'Trainee Draft'}
                                    </p>
@@ -80,7 +80,7 @@ export const Header: React.FC<HeaderProps> = ({
                          </div>
 
                          {/* Workspace View Selector */}
-                         <div className='hidden md:flex items-center gap-2 rounded-xl bg-slate-900/90 px-1.5 py-1 shadow-inner'>
+                         <div className=' items-center gap-2 rounded-xl bg-slate-900/90 px-1.5 py-1 shadow-inner'>
                               <div className='relative'>
                                    <button
                                         type='button'
@@ -109,7 +109,7 @@ export const Header: React.FC<HeaderProps> = ({
                                    {isViewMenuOpen && (
                                         <div
                                              role='menu'
-                                             className='absolute right-0 top-full z-50 mt-2 w-48 origin-top-right rounded-xl border border-slate-700 bg-slate-900 p-1.5 shadow-2xl animate-in fade-in zoom-in-95 duration-150'
+                                             className='absolute right-0 top-full z-50 mt-2  origin-top-right rounded-xl border border-slate-700 bg-slate-900 p-1.5 shadow-2xl animate-in fade-in zoom-in-95 duration-150'
                                         >
                                              {viewOptions.map(
                                                   ({
@@ -133,7 +133,7 @@ export const Header: React.FC<HeaderProps> = ({
                                                                            false,
                                                                       )
                                                                  }}
-                                                                 className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-bold transition-colors cursor-pointer ${
+                                                                 className={`flex w-full items-center gap-2 rounded-lg px-1 py-2 text-left text-xs font-bold transition-colors cursor-pointer ${
                                                                       isSelected
                                                                            ? 'bg-amber-400 text-slate-950'
                                                                            : 'text-slate-300 hover:bg-slate-800 hover:text-white'
@@ -156,27 +156,31 @@ export const Header: React.FC<HeaderProps> = ({
                               <button
                                    onClick={onReset}
                                    title='Clear all fields to start with an empty plan'
-                                   className='flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-200 hover:text-red-300 bg-slate-900 border border-slate-800 hover:bg-slate-800 transition-colors cursor-pointer'
+                                   className='flex items-center justify-center p-2 rounded-lg text-slate-200 hover:text-red-300 bg-slate-900 border border-slate-800 hover:bg-slate-800 transition-colors cursor-pointer sm:px-2.5 sm:py-1.5'
                               >
-                                   <RotateCcw className='w-3.5 h-3.5 text-red-400' />
-                                   <span>Empty Form</span>
+                                   <RotateCcw className=' text-red-400' />
+                                   <span className='text-xs hidden lg:inline lg:pl-1.5'>
+                                        Clear All
+                                   </span>
                               </button>
 
                               <button
                                    onClick={onLoadSample}
                                    title='Load Sample Pre-filled Lesson Plan for Reference'
-                                   className='hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-200 hover:text-white bg-slate-900 border border-slate-800 hover:bg-slate-800 transition-colors cursor-pointer'
+                                   className='flex items-center justify-center p-2 rounded-lg text-slate-200 hover:text-white bg-slate-900 border border-slate-800 hover:bg-slate-800 transition-colors cursor-pointer lg:px-2.5 lg:py-1.5'
                               >
-                                   <Sparkles className='w-3.5 h-3.5 text-amber-400' />
-                                   <span>Load Sample</span>
+                                   <Sparkles className=' text-amber-400 ' />
+                                   <span className='text-xs hidden lg:inline lg:pl-1.5'>
+                                        Load Sample
+                                   </span>
                               </button>
-
 
                               {/* Primary One-Click Export PDF Button */}
                               <button
+                                   title='Export PDF'
                                    onClick={onExportPdf}
                                    disabled={isExporting}
-                                   className='flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-black text-slate-950 bg-amber-400 hover:bg-amber-300 shadow-md shadow-amber-950/40 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer'
+                                   className='fixed right-8 top-32 lg:right-8 lg:top-18 z-50 flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-black text-slate-950 bg-amber-400/80 hover:bg-amber-300/80 shadow-lg shadow-amber-950/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer '
                               >
                                    {isExporting ? (
                                         <div className='w-3.5 h-3.5 border-2 border-slate-950/30 border-t-slate-950 rounded-full animate-spin' />
@@ -195,3 +199,4 @@ export const Header: React.FC<HeaderProps> = ({
           </header>
      )
 }
+
