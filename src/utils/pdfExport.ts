@@ -1,7 +1,7 @@
 // Keep these libraries out of the main bundle so the app stays lighter on initial load.
 // They are loaded only when the user actually triggers PDF export.
 
-function oklabToRgbValues(L: number, aLab: number, bLab: number, A: number): string {
+function oklabToRgbValues(L:number, aLab: number, bLab: number, A: number): string {
   const l_ = L + 0.3963377774 * aLab + 0.2158037573 * bLab;
   const m_ = L - 0.1055613458 * aLab - 0.0638541728 * bLab;
   const s_ = L - 0.0894841775 * aLab - 1.2914855480 * bLab;
@@ -279,7 +279,7 @@ export async function exportLessonPlanToPdf(filename = 'Teaching_Practice_Lesson
         logging: false,
         backgroundColor: '#ffffff',
         windowWidth: 1200,
-        onclone: (clonedDoc) => {
+        onclone: (clonedDoc:any) => {
           sanitizeClonedDocumentForHtml2Canvas(clonedDoc);
           sanitizeNodeTree(clonedDoc);
 
