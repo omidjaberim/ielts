@@ -175,9 +175,9 @@ export const Header: React.FC<HeaderProps> = ({
                                    </span>
                               </button>
 
-                              {/* Primary One-Click Export PDF Button */}
+                              {/* Opens the browser print dialog, where the plan can be saved as PDF. */}
                               <button
-                                   title='Export PDF'
+                                   title='Open print dialog to save as PDF'
                                    onClick={onExportPdf}
                                    disabled={isExporting}
                                    className='fixed right-8 top-32 lg:right-8 lg:top-18 z-50 flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-black text-slate-950 bg-amber-400/80 hover:bg-amber-300/80 shadow-lg shadow-amber-950/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer '
@@ -189,7 +189,7 @@ export const Header: React.FC<HeaderProps> = ({
                                    )}
                                    <span>
                                         {isExporting
-                                             ? 'Generating PDF...'
+                                             ? 'Preparing document...'
                                              : 'Export PDF'}
                                    </span>
                               </button>
@@ -199,4 +199,3 @@ export const Header: React.FC<HeaderProps> = ({
           </header>
      )
 }
-

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Languages,
   Compass,
@@ -46,6 +46,7 @@ export const SectionPage2: React.FC<SectionPage2Props> = ({
   skillsFocus,
   onChangeSkillsFocus,
 }) => {
+  const [selectedSubSkill, setSelectedSubSkill] = useState('');
   const currentFocusMode = languageAnalysis.focusMode || 'A';
 
   const isGrammarEditable = currentFocusMode === 'A' || currentFocusMode === 'ALL';
@@ -418,9 +419,10 @@ export const SectionPage2: React.FC<SectionPage2Props> = ({
               </label>
               <select
                 disabled={!isSkillsEditable}
-                value=""
+                value={selectedSubSkill}
                 onChange={(e) => {
                   if (e.target.value) {
+                    setSelectedSubSkill(e.target.value);
                     toggleSkillOption(e.target.value);
                   }
                 }}
@@ -524,4 +526,3 @@ export const SectionPage2: React.FC<SectionPage2Props> = ({
     </div>
   );
 };
-

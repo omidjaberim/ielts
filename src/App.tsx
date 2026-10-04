@@ -17,7 +17,7 @@ import 'react-toastify/dist/ReactToastify.css'
 
 import { LessonPlanData } from './types'
 import { sampleLessonPlan, emptyLessonPlan } from './data/defaultData'
-import { validateLessonPlanStages } from './utils/stageUtils'
+import { getSelectedInteractionMode, validateLessonPlanStages } from './utils/stageUtils'
 import { Header } from './components/Header'
 import { BrandingSettingsModal } from './components/BrandingSettingsModal'
 import { SectionPage1 } from './components/Editor/SectionPage1'
@@ -46,6 +46,12 @@ function normalizeLessonPlanData(data: Partial<LessonPlanData> | null | undefine
                          : '',
                interactionMode:
                     typeof stage?.interactionMode === 'string' ? stage.interactionMode : '',
+               selectedInteractionMode:
+                    typeof stage?.selectedInteractionMode === 'string'
+                         ? stage.selectedInteractionMode
+                         : getSelectedInteractionMode(
+                                typeof stage?.interactionMode === 'string' ? stage.interactionMode : '',
+                           ),
           }))
          : emptyLessonPlan.stages
 
@@ -215,22 +221,19 @@ export default function App() {
      const handleExportPdf = async () => {
           if (!checkStageValidation()) return
           setIsExporting(true)
-          showToast('Generating PDF document...', 'info')
+          showToast('Preparing print-ready lesson plan...', 'info')
           try {
                const trainee = lessonData.metadata.traineeName || 'Trainee'
                const filename = `Teaching_Practice_Lesson_Plan_${trainee.replace(/\s+/g, '_')}.pdf`
                await exportLessonPlanToPdf(filename)
-               showToast('PDF exported successfully!')
+               showToast('Print dialog closed. Choose Save as PDF there to create the PDF.')
           } catch (err) {
                const message =
                     err instanceof Error
                          ? err.message
-                         : 'PDF export failed in this browser. Please try again or use another browser.'
+                         : 'Could not open the print-ready lesson plan.'
                console.error('Export PDF error:', err)
-               showToast(
-                    'PDF export failed in this browser. Please try again or use another browser.',
-                    'error',
-               )
+               showToast(message, 'error')
                console.warn(message)
           } finally {
                setIsExporting(false)

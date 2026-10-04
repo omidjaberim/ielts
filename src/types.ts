@@ -53,6 +53,7 @@ export interface LessonStage {
   procedureAndInstructions: string;
   timeMins: number | string;
   interactionMode: string; // e.g. T-S, S-S, Pair work, Group work
+  selectedInteractionMode?: string;
 }
 
 export interface TrainerFeedback {

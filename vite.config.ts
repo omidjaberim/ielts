@@ -19,7 +19,6 @@ export default defineConfig(() => {
             'react-vendor': ['react', 'react-dom'],
             'ui-vendor': ['lucide-react'],
             'toast-vendor': ['react-toastify'],
-            'pdf-vendor': ['html2canvas', 'jspdf'],
           },
         },
       },

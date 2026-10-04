@@ -1,7 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { LessonPlanData } from '../../types';
 import { CheckSquare, Square, AlertTriangle, Lightbulb, UserCheck, Sparkles, BookOpen } from 'lucide-react';
-import { STAGE_OPTIONS, getStageName } from '../../utils/stageUtils';
+import {
+  addInteractionMode,
+  STAGE_OPTIONS,
+  getSelectedInteractionMode,
+  getStageName,
+} from '../../utils/stageUtils';
 
 interface DocumentPageLayoutProps {
   data: LessonPlanData;
@@ -14,6 +19,7 @@ export const DocumentPageLayout: React.FC<DocumentPageLayoutProps> = ({
   onChangeData,
   isInteractiveCanvas = true,
 }) => {
+  const [selectedSubSkill, setSelectedSubSkill] = useState('');
   const { branding, metadata, aims, languageAnalysis, skillsFocus, overallAim, stages, feedback } = data;
 
   const currentFocusMode = languageAnalysis.focusMode || 'A';
@@ -70,6 +76,24 @@ export const DocumentPageLayout: React.FC<DocumentPageLayoutProps> = ({
       curr = curr[keys[i]];
     }
     curr[keys[keys.length - 1]] = value;
+    onChangeData(newData);
+  };
+
+  const handleInteractionModeSelect = (stageIndex: number, selectedMode: string) => {
+    if (!onChangeData) return;
+    const newData = JSON.parse(JSON.stringify(data));
+    const stage = newData.stages[stageIndex];
+    stage.interactionMode = addInteractionMode(stage.interactionMode || '', selectedMode);
+    stage.selectedInteractionMode = selectedMode;
+    onChangeData(newData);
+  };
+
+  const handleInteractionModeTextChange = (stageIndex: number, interactionMode: string) => {
+    if (!onChangeData) return;
+    const newData = JSON.parse(JSON.stringify(data));
+    newData.stages[stageIndex].interactionMode = interactionMode;
+    newData.stages[stageIndex].selectedInteractionMode =
+      getSelectedInteractionMode(interactionMode);
     onChangeData(newData);
   };
 
@@ -537,9 +561,10 @@ export const DocumentPageLayout: React.FC<DocumentPageLayoutProps> = ({
                   </label>
                   <select
                     disabled={!isSkillsEditable}
-                    value=""
+                    value={selectedSubSkill}
                     onChange={(e) => {
                       if (e.target.value) {
+                        setSelectedSubSkill(e.target.value);
                         handleToggleSubSkill(e.target.value);
                       }
                     }}
@@ -707,42 +732,41 @@ export const DocumentPageLayout: React.FC<DocumentPageLayoutProps> = ({
                   </div>
                   <div className="col-span-2 p-2 text-slate-800 font-serif text-[11px] bg-emerald-50/30 flex flex-col justify-between">
                     {/* Dropdown Mode Selector for Canvas Page 3 */}
-                    <div className="mb-1 print:hidden">
-                      <select
-                        value=""
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          if (!val) return;
-                          const curr = stage.interactionMode || '';
-                          if (!curr.trim()) {
-                            handleUpdate(`stages.${idx}.interactionMode`, val);
-                          } else if (!curr.toLowerCase().includes(val.toLowerCase())) {
-                            handleUpdate(`stages.${idx}.interactionMode`, `${curr}, ${val}`);
-                          } else {
-                            handleUpdate(`stages.${idx}.interactionMode`, val);
-                          }
-                        }}
-                        className="w-full bg-white border border-emerald-400 p-1 text-[10px] font-bold text-slate-900 rounded-xs focus:border-amber-600 outline-hidden cursor-pointer shadow-2xs"
-                      >
-                        <option value="">-- Select Mode --</option>
-                        <option value="T-Ss">T-Ss (Teacher to Whole Class)</option>
-                        <option value="T-S">T-S (Teacher to Student)</option>
-                        <option value="S-S (Pairs)">S-S (Pair Work)</option>
-                        <option value="S-Ss (Groups)">S-Ss (Group Work)</option>
-                        <option value="Individual">Individual (Solo Work)</option>
-                        <option value="Mingle">Mingle (Classroom Mingle)</option>
-                        <option value="Open Class">Open Class Discussion</option>
-                      </select>
-                    </div>
-                    <textarea
-                      rows={3}
-                      value={stage.interactionMode}
-                      onChange={(e) =>
-                        handleUpdate(`stages.${idx}.interactionMode`, e.target.value)
-                      }
-                      placeholder="Mode (e.g. Pair work)"
-                      className="w-full bg-transparent border-0 p-0 text-xs font-serif font-bold text-emerald-950 focus:ring-0 outline-hidden resize-none"
-                    />
+                    {!isInteractiveCanvas ? (
+                      <div className="text-xs font-serif font-bold text-emerald-950 whitespace-pre-wrap break-words">
+                        {stage.interactionMode}
+                      </div>
+                    ) : (
+                      <>
+                        <div className="mb-1 print:hidden">
+                          <select
+                            value={stage.selectedInteractionMode ?? getSelectedInteractionMode(stage.interactionMode)}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              if (!val) return;
+                              handleInteractionModeSelect(idx, val);
+                            }}
+                            className="w-full bg-white border border-emerald-400 p-1 text-[10px] font-bold text-slate-900 rounded-xs focus:border-amber-600 outline-hidden cursor-pointer shadow-2xs"
+                          >
+                            <option value="">-- Select Mode --</option>
+                            <option value="T-Ss">T-Ss (Teacher to Whole Class)</option>
+                            <option value="T-S">T-S (Teacher to Student)</option>
+                            <option value="S-S (Pairs)">S-S (Pair Work)</option>
+                            <option value="S-Ss (Groups)">S-Ss (Group Work)</option>
+                            <option value="Individual">Individual (Solo Work)</option>
+                            <option value="Mingle">Mingle (Classroom Mingle)</option>
+                            <option value="Open Class">Open Class Discussion</option>
+                          </select>
+                        </div>
+                        <textarea
+                          rows={3}
+                          value={stage.interactionMode}
+                          onChange={(e) => handleInteractionModeTextChange(idx, e.target.value)}
+                          placeholder="Mode (e.g. Pair work)"
+                          className="w-full bg-transparent border-0 p-0 text-xs font-serif font-bold text-emerald-950 focus:ring-0 outline-hidden resize-none"
+                        />
+                      </>
+                    )}
                   </div>
                 </div>
               ))}
@@ -851,42 +875,41 @@ export const DocumentPageLayout: React.FC<DocumentPageLayoutProps> = ({
                       </div>
                       <div className="col-span-2 p-2 text-slate-800 font-serif text-[11px] bg-emerald-50/30 flex flex-col justify-between">
                         {/* Dropdown Mode Selector for Canvas Page 4 */}
-                        <div className="mb-1 print:hidden">
-                          <select
-                            value=""
-                            onChange={(e) => {
-                              const val = e.target.value;
-                              if (!val) return;
-                              const curr = stage.interactionMode || '';
-                              if (!curr.trim()) {
-                                handleUpdate(`stages.${idx}.interactionMode`, val);
-                              } else if (!curr.toLowerCase().includes(val.toLowerCase())) {
-                                handleUpdate(`stages.${idx}.interactionMode`, `${curr}, ${val}`);
-                              } else {
-                                handleUpdate(`stages.${idx}.interactionMode`, val);
-                              }
-                            }}
-                            className="w-full bg-white border border-emerald-400 p-1 text-[10px] font-bold text-slate-900 rounded-xs focus:border-amber-600 outline-hidden cursor-pointer shadow-2xs"
-                          >
-                            <option value="">-- Select Mode --</option>
-                            <option value="T-Ss">T-Ss (Teacher to Whole Class)</option>
-                            <option value="T-S">T-S (Teacher to Student)</option>
-                            <option value="S-S (Pairs)">S-S (Pair Work)</option>
-                            <option value="S-Ss (Groups)">S-Ss (Group Work)</option>
-                            <option value="Individual">Individual (Solo Work)</option>
-                            <option value="Mingle">Mingle (Classroom Mingle)</option>
-                            <option value="Open Class">Open Class Discussion</option>
-                          </select>
-                        </div>
-                        <textarea
-                          rows={3}
-                          value={stage.interactionMode}
-                          onChange={(e) =>
-                            handleUpdate(`stages.${idx}.interactionMode`, e.target.value)
-                          }
-                          placeholder="Interaction..."
-                          className="w-full bg-transparent border-0 p-0 text-xs font-serif font-bold text-emerald-950 focus:ring-0 outline-hidden resize-none"
-                        />
+                        {!isInteractiveCanvas ? (
+                          <div className="text-xs font-serif font-bold text-emerald-950 whitespace-pre-wrap break-words">
+                            {stage.interactionMode}
+                          </div>
+                        ) : (
+                          <>
+                            <div className="mb-1 print:hidden">
+                              <select
+                                value={stage.selectedInteractionMode ?? getSelectedInteractionMode(stage.interactionMode)}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  if (!val) return;
+                                  handleInteractionModeSelect(idx, val);
+                                }}
+                                className="w-full bg-white border border-emerald-400 p-1 text-[10px] font-bold text-slate-900 rounded-xs focus:border-amber-600 outline-hidden cursor-pointer shadow-2xs"
+                              >
+                                <option value="">-- Select Mode --</option>
+                                <option value="T-Ss">T-Ss (Teacher to Whole Class)</option>
+                                <option value="T-S">T-S (Teacher to Student)</option>
+                                <option value="S-S (Pairs)">S-S (Pair Work)</option>
+                                <option value="S-Ss (Groups)">S-Ss (Group Work)</option>
+                                <option value="Individual">Individual (Solo Work)</option>
+                                <option value="Mingle">Mingle (Classroom Mingle)</option>
+                                <option value="Open Class">Open Class Discussion</option>
+                              </select>
+                            </div>
+                            <textarea
+                              rows={3}
+                              value={stage.interactionMode}
+                              onChange={(e) => handleInteractionModeTextChange(idx, e.target.value)}
+                              placeholder="Interaction..."
+                              className="w-full bg-transparent border-0 p-0 text-xs font-serif font-bold text-emerald-950 focus:ring-0 outline-hidden resize-none"
+                            />
+                          </>
+                        )}
                       </div>
                     </div>
                   );

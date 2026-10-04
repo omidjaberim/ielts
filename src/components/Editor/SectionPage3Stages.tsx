@@ -13,7 +13,12 @@ import {
   Users,
 } from 'lucide-react';
 import { LessonStage } from '../../types';
-import { STAGE_OPTIONS, getStageName } from '../../utils/stageUtils';
+import {
+  addInteractionMode,
+  STAGE_OPTIONS,
+  getSelectedInteractionMode,
+  getStageName,
+} from '../../utils/stageUtils';
 import { FieldLabel } from '../FieldLabel';
 
 interface SectionPage3StagesProps {
@@ -41,6 +46,32 @@ export const SectionPage3Stages: React.FC<SectionPage3StagesProps> = ({
 
   const handleStageChange = (id: string, field: keyof LessonStage, value: any) => {
     const updated = stages.map((s) => (s.id === id ? { ...s, [field]: value } : s));
+    onChangeStages(updated);
+  };
+
+  const handleInteractionModeSelect = (id: string, selectedMode: string) => {
+    const updated = stages.map((stage) => {
+      if (stage.id !== id) return stage;
+      const current = stage.interactionMode || '';
+      return {
+        ...stage,
+        interactionMode: addInteractionMode(current, selectedMode),
+        selectedInteractionMode: selectedMode,
+      };
+    });
+    onChangeStages(updated);
+  };
+
+  const handleInteractionModeTextChange = (id: string, interactionMode: string) => {
+    const updated = stages.map((stage) =>
+      stage.id === id
+        ? {
+            ...stage,
+            interactionMode,
+            selectedInteractionMode: getSelectedInteractionMode(interactionMode),
+          }
+        : stage,
+    );
     onChangeStages(updated);
   };
 
@@ -334,18 +365,11 @@ export const SectionPage3Stages: React.FC<SectionPage3StagesProps> = ({
                   {/* Dropdown Mode Options */}
                   <div className="space-y-1">
                     <select
-                      value=""
+                      value={stage.selectedInteractionMode ?? getSelectedInteractionMode(stage.interactionMode)}
                       onChange={(e) => {
                         const val = e.target.value;
                         if (!val) return;
-                        const current = stage.interactionMode || '';
-                        if (!current.trim()) {
-                          handleStageChange(stage.id, 'interactionMode', val);
-                        } else if (!current.toLowerCase().includes(val.toLowerCase())) {
-                          handleStageChange(stage.id, 'interactionMode', `${current}, ${val}`);
-                        } else {
-                          handleStageChange(stage.id, 'interactionMode', val);
-                        }
+                        handleInteractionModeSelect(stage.id, val);
                       }}
                       className="w-full px-2.5 py-1.5 bg-white border border-emerald-400 rounded-md text-xs font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500 outline-hidden cursor-pointer shadow-2xs"
                     >
@@ -363,7 +387,7 @@ export const SectionPage3Stages: React.FC<SectionPage3StagesProps> = ({
                 <textarea
                   rows={2}
                   value={stage.interactionMode}
-                  onChange={(e) => handleStageChange(stage.id, 'interactionMode', e.target.value)}
+                  onChange={(e) => handleInteractionModeTextChange(stage.id, e.target.value)}
                   placeholder="e.g. T-Ss, Pair work"
                   className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-hidden font-medium"
                 />

@@ -18,6 +18,34 @@ export const STAGE_OPTIONS = [
 
 export type StageOption = (typeof STAGE_OPTIONS)[number];
 
+const INTERACTION_MODE_OPTIONS = [
+  'T-Ss',
+  'T-S',
+  'S-S (Pairs)',
+  'S-Ss (Groups)',
+  'Individual',
+  'Mingle',
+  'Open Class',
+];
+
+export function getSelectedInteractionMode(interactionMode: string): string {
+  const selectedModes = interactionMode.split(',').map((mode) => mode.trim());
+  return selectedModes.reverse().find((mode) => INTERACTION_MODE_OPTIONS.includes(mode)) || '';
+}
+
+export function addInteractionMode(interactionMode: string, selectedMode: string): string {
+  const modes = interactionMode
+    .split(',')
+    .map((mode) => mode.trim())
+    .filter(Boolean);
+
+  if (modes.includes(selectedMode)) {
+    return interactionMode;
+  }
+
+  return [...modes, selectedMode].join(', ');
+}
+
 export function getStageName(stage: LessonStage): string {
   if (stage.stageName && STAGE_OPTIONS.includes(stage.stageName as StageOption)) {
     return stage.stageName;
